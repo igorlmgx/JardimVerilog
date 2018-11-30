@@ -128,7 +128,7 @@ task Spinner();
 		
 			i = i + 1;
 		
-			if(i == 25000000)
+			if(i == 8333333)
 				estado = A;
 		
 			i = 0;
