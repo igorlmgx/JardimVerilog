@@ -13,9 +13,9 @@ reg LEDG, LEDR;
 //index será uma variável de controle
 //mesma ideia de for(index = 0; index < 10; index++)
 integer index = 0;
-integer indexSpin = 50000000; //para poder ligar o spinner no primeiro ciclo
+integer indexSprink = 50000000; //para poder ligar o Sprinkler no primeiro ciclo
 
-//in será uma variável de controle para spinner,
+//in será uma variável de controle para Sprinkler,
 //a função que fará o display girar ou ficar parado
 reg in = 0;
 
@@ -32,10 +32,10 @@ always @(posedge CLOCK_50) begin
 
 			LEDG = 0;
 			LEDR = 1; //led vermelho com sistema desligado
-			in = 0; //spinner desligado (aceso no meio)
+			in = 0; //Sprinkler desligado (aceso no meio)
 
 			//deixa o display aceso apenas no meio (parado)
-			Spinner(CLOCK_50, in, HEX0);
+			Sprinkler(CLOCK_50, in, HEX0);
 
 			//utilizamos o botão KEY da placa
 			//o valor ativo do botão é 0, por isso if cond == 0
@@ -52,10 +52,10 @@ always @(posedge CLOCK_50) begin
 
 			LEDG = 1; //led verde com sistema ligado
 			LEDR = 0;
-			in = 1; //spinner ligado (girando)
+			in = 1; //Sprinkler ligado (girando)
 
 			//faz o display rodar
-			Spinner(CLOCK_50, in, HEX0);
+			Sprinkler(CLOCK_50, in, HEX0);
 
 
 			//verifica cada ciclo do clock
@@ -63,12 +63,12 @@ always @(posedge CLOCK_50) begin
 
 
 				//faz o display girar por um segundo quando o clock atinge 50mi
-				if(indexSpin == 50000000) begin
-					Spinner(CLOCK_50, in, HEX0);
-					indexSpin = 0;
+				if(indexSprink == 50000000) begin
+					Sprinkler(CLOCK_50, in, HEX0);
+					indexSprink = 0;
 				end
 
-				indexSpin = indexSpin + 1;
+				indexSprink = indexSprink + 1;
 
 				//enquanto index não atingir 150mi de ciclos (3 segundos)
 				//incrementa index e não sai do estado
@@ -105,13 +105,13 @@ always @(posedge CLOCK_50) begin
 			if(CLOCK_50 == 1'b 1) begin
 
 
-				if(indexSpin == 50000000) begin
-					Spinner(CLOCK_50, in, HEX0);
-					indexSpin = 0;
+				if(indexSprink == 50000000) begin
+					Sprinkler(CLOCK_50, in, HEX0);
+					indexSprink = 0;
 				end
 
 
-				indexSpin = indexSpin + 1;
+				indexSprink = indexSprink + 1;
 				index = index + 1;
 
 
