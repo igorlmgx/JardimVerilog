@@ -6,19 +6,18 @@ module logica (amanhecer, anoitecer, controle, LEDG, LEDR, HEX0, CLOCK_50);
 //LEMBRETE: 50MHz significa 50mi de ciclos por segundo
 
 input amanhecer, anoitecer, controle, CLOCK_50;
-output HEX0, LEDG, LEDR;
+output reg[6:0] HEX0;
+output LEDG, LEDR;
 reg[1:0] estado;
 reg LEDG, LEDR;
 
-//index será uma variável de controle
-//mesma ideia de for(index = 0; index < 10; index++)
-integer index = 0;
-integer indexSprink = 50000000; //para poder ligar o Sprinkler no primeiro ciclo
 
-//in será uma variável de controle para Sprinkler,
-//a função que fará o display girar ou ficar parado
-reg in = 0;
+//ciclos será uma variável de controle
+//mesma ideia de for(ciclos = 0; ciclos < 10; ciclos++)
+integer ciclos = 0;
+integer segundos = 0; //contador de segundos
 
+//definiçao dos estados
 parameter Desligado = 2'b 00, Liga30 = 2'b 01, Liga60 = 2'b 10;
 
 //inicia o sistema de irrigação desligado
@@ -32,10 +31,11 @@ always @(posedge CLOCK_50) begin
 
 			LEDG = 0;
 			LEDR = 1; //led vermelho com sistema desligado
-			in = 0; //Sprinkler desligado (aceso no meio)
 
-			//deixa o display aceso apenas no meio (parado)
-			Sprinkler(CLOCK_50, in, HEX0);
+			//como o clock não se altera aqui, ciclos sempre será 0
+			//o display ficara aceso apenas no meio
+			HEX0 = Sprinkler(ciclos);
+
 
 			//utilizamos o botão KEY da placa
 			//o valor ativo do botão é 0, por isso if cond == 0
@@ -52,42 +52,41 @@ always @(posedge CLOCK_50) begin
 
 			LEDG = 1; //led verde com sistema ligado
 			LEDR = 0;
-			in = 1; //Sprinkler ligado (girando)
-
-			//faz o display rodar
-			Sprinkler(CLOCK_50, in, HEX0);
 
 
 			//verifica cada ciclo do clock
 			if(CLOCK_50 == 1'b 1) begin
 
 
-				//faz o display girar por um segundo quando o clock atinge 50mi
-				if(indexSprink == 50000000) begin
-					Sprinkler(CLOCK_50, in, HEX0);
-					indexSprink = 0;
+				//a funçao Sprinkler retorna como o display será aceso
+				//deve ser atualizada constantemente para o movimento funcionar
+				HEX0 = Sprinkler(ciclos);
+
+				//incrementa um ciclo
+				ciclos = ciclos + 1;
+
+
+				//se chegou em 50mi de ciclos, aumenta um segundo
+				if(ciclos == 50000000) begin
+					segundos = segundos + 1;
+					ciclos = 0;
 				end
 
-				indexSprink = indexSprink + 1;
-
-				//enquanto index não atingir 150mi de ciclos (3 segundos)
-				//incrementa index e não sai do estado
-
-				index = index + 1;
 
 				//sai do estado se o controle é acionado
-				//zera o index
+				//zera o ciclo e os segundos
 				if(controle == 0) begin
 					estado = Desligado;
-					index = 0;
+					ciclos = 0;
+					segundos = 0;
 				end
 
 
-
-				//se atingiu 150mi, desliga o irrigador e zera o index
-				if(index == 150000000) begin
+				//se atingiu 3 segundos, desliga o irrigador e zera tudo
+				if(segundos == 3) begin
 					estado = Desligado;
-					index = 0;
+					ciclos = 0;
+					segundos = 0;
 				end
 				
 			end
@@ -99,33 +98,34 @@ always @(posedge CLOCK_50) begin
 
 			LEDG = 1;
 			LEDR = 0;
-			in = 1;
-
 
 			if(CLOCK_50 == 1'b 1) begin
 
 
-				if(indexSprink == 50000000) begin
-					Sprinkler(CLOCK_50, in, HEX0);
-					indexSprink = 0;
+				HEX0 = Sprinkler(ciclos);
+
+				ciclos = ciclos + 1;
+
+
+				if(ciclos == 50000000) begin
+					segundos = segundos + 1;
+					ciclos = 0;
 				end
-
-
-				indexSprink = indexSprink + 1;
-				index = index + 1;
 
 
 				if(controle == 0) begin
 					estado = Desligado;
-					index = 0;
+					ciclos = 0;
+					segundos = 0;
 				end
 
-				//desliga o sistema após 300mi ciclos (6 segundos)
-				if(index == 300000000) begin
+
+				//desliga o sistema após 6 segundos
+				if(segundos == 6) begin
 					estado = Desligado;
-					index = 0;
+					ciclos = 0;
+					segundos = 0;
 				end
-
 			end
 		end
 
@@ -138,13 +138,14 @@ end
 endmodule
 
 
-module Jardim (KEY, LEDG, LEDR, CLOCK_50);
+module Jardim (KEY, LEDG, LEDR, CLOCK_50, HEX0);
 
 input[2:0] KEY;
 input CLOCK_50;
 output[0:0] LEDR;
 output[7:7] LEDG;
+output[6:0] HEX0;
 
-logica l (KEY[2], KEY[1], KEY[0], LEDG[7], LEDR[0], CLOCK_50);
+logica l (KEY[2], KEY[1], KEY[0], LEDG[7], LEDR[0], HEX0, CLOCK_50);
 
 endmodule
