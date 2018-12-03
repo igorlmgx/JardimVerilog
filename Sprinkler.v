@@ -1,146 +1,48 @@
 /*
-TASK Sprinkler
+FUNCTION Sprinkler
 
-A ideia dessa task é fazer o display girar durante um segundo,
-utilizando uma máquina de estados em que cada estado é um segmento aceso.
+A ideia dessa função é fazer o display girar durante um segundo,
+retornando a configuração do display sempre que é chamada.
 
-Como são 6 displays que devem ficar acesos, cada um ficará por 0.16666 segundos.
+Como são 6 displays que devem ficar acesos, cada um ficará por um intervalo de 0.16666 segundos.
 
-Para a task funcionar, o arquivo deve ser declarado como SystemVerilog no Quartus II:
+Para a função funcionar, o arquivo deve ser declarado como SystemVerilog no Quartus II:
 
 Files > Properties > HDL Version > SystemVerilog_2005
 */
 
-task Sprinkler();
+function[6:0] Sprinkler;
 
-	input CLOCK_50, in;
-	output reg[6:0] HEX0;
-	integer i = 0;
-	reg[3:0] estado;
-	reg in;
-	
-	//estados A-F são os displays em volta
-	//estado G é o display do meio
-	parameter A = 3'b 000, B = 3'b 001, C = 3'b 010, D = 3'b 011, E = 3'b 100, F = 3'b 101, G = 3'b 110;
+input i; //i é o número de ciclos do clock
 
-	//estado inicial é o display do meio
-	estado = G;
+begin
 
-	//se receber o parametro 1 na variável in
-	//inicia a máquina no estado A
-	if(in == 1) begin
-		estado = A;
-	end
+	//verifica em qual ciclo o clock está
+	//acende um dos segmentos dependendo disso
 
-	case(estado)
 
-		A : begin
+	if(i == 0)
+		Sprinkler = 7'b 0111111; //segmento do meio
 
-		//liga o primeiro segmento do display
-		HEX0 = 7'b 01111111;
 
-		//verifica cada ciclo do clock
-		if(CLOCK_50 == 1'b 1) begin
+	//segmentos externos
+	if(i > 0 && i < 8333333)
+		Sprinkler = 7'b 1111110;
 
-			//incrementa o contador i
-			i = i + 1;
+	if(i >= 8333333 && i < 16666667)
+		Sprinkler = 7'b 1111101;
 
-			//quando i atinge 1/6 segundo (8.3mi),
-			//muda de estado para o próximo segmento
-			if(i == 8333333)
-				estado = B;
+	if(i >= 16666667 && i < 25000000)
+		Sprinkler = 7'b 1111011;
 
-			i = 0;
-		end
-	end
+	if(i >= 25000000 && i < 33333333)
+		Sprinkler = 7'b 1110111;
 
-	B : begin
+	if(i >= 33333333 && i < 46666667)
+		Sprinkler = 7'b 1101111;
 
-		HEX0 = 7'b 1011111; //segundo segmento
+	if(i >= 46666667 && i < 50000000)
+		Sprinkler = 7'b 1011111;
 
-		if(CLOCK_50 == 1'b 1) begin
-
-			i = i + 1;
-
-			if(i == 8333333)
-				estado = C;
-
-			i = 0;
-		end
-	end
-
-	C : begin
-
-		HEX0 = 7'b 1101111;
-
-		if(CLOCK_50 == 1'b 1) begin
-
-			i = i + 1;
-
-			if(i == 8333333)
-				estado = D;
-
-			i = 0;
-		end
-	end
-
-	D : begin
-
-		HEX0 = 7'b 1110111;
-
-		if(CLOCK_50 == 1'b 1) begin
-
-			i = i + 1;
-
-			if(i == 8333333)
-				estado = F;
-
-			i = 0;
-		end
-	end
-
-	E : begin
-
-		HEX0 = 7'b 1111011;
-
-		if(CLOCK_50 == 1'b 1) begin
-
-			i = i + 1;
-
-			if(i == 8333333)
-				estado = A;
-
-			i = 0;
-		end
-	end
-
-	F : begin
-
-		HEX0 = 7'b 1111101;
-
-		/*
-		analisar se a task se encerra aqui
-		ou deve continuar retornando ao estado A
-		(compilar código na placa)
-		
-		
-		if(CLOCK_50 == 1'b 1) begin
-		
-			i = i + 1;
-		
-			if(i == 8333333)
-				estado = A;
-		
-			i = 0;
-		end
-		*/
-	end
-
-	//estado G não leva em outro estado
-	G : begin
-		HEX0 = 7'b 1111110;
-	end
-
-	endcase
-
-endtask
+end	
+endfunction
